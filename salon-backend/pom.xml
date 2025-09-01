@@ -21,6 +21,7 @@
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <jjwt.version>0.11.5</jjwt.version> <!-- Define JJWT version -->
     </properties>
 
     <dependencies>
@@ -80,6 +81,25 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- JJWT for JWT support -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
