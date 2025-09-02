@@ -1,22 +1,23 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../lib/api";
 import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react";
 
 interface RegisterFormData {
-  fullName: string;
+  username: string;
   email: string;
   password: string;
-  phone: string;
+  role: "USER" | "ADMIN";
 }
 
 export default function RegisterForm() {
+  const navigate = useNavigate();
   const [form, setForm] = useState<RegisterFormData>({
-    fullName: "",
+    username: "",
     email: "",
     password: "",
-    phone: "",
+    role: "USER",
   });
   const [message, setMessage] = useState<string>("");
   const [errors, setErrors] = useState<Partial<RegisterFormData>>({});
@@ -25,20 +26,18 @@ export default function RegisterForm() {
 
   const validateForm = (): boolean => {
     const newErrors: Partial<RegisterFormData> = {};
-    if (!form.fullName) newErrors.fullName = "Full Name is required";
-    else if (form.fullName.length < 2) newErrors.fullName = "Full Name must be at least 2 characters";
+    if (!form.username) newErrors.username = "Username is required";
+    else if (form.username.length < 2) newErrors.username = "Username must be at least 2 characters";
     if (!form.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Invalid email format";
     if (!form.password) newErrors.password = "Password is required";
     else if (form.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-    if (!form.phone) newErrors.phone = "Phone number is required";
-    else if (!/^\+?\d{10,15}$/.test(form.phone.replace(/\s/g, ''))) newErrors.phone = "Invalid phone number";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
   };
@@ -49,10 +48,16 @@ export default function RegisterForm() {
 
     setIsLoading(true);
     try {
-      await api.post("/auth/register", form);
-      setMessage("✅ Registration successful!");
+      const endpoint = form.role === "USER" ? "/auth/register/user" : "/auth/register/admin";
+      await api.post(endpoint, {
+        username: form.username,
+        email: form.email,
+        password: form.password,
+      });
+      setMessage(`✅ ${form.role} registered successfully!`);
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err: any) {
-      setMessage("❌ " + (err.response?.data?.message || "Something went wrong"));
+      setMessage("❌ " + (err.response?.data?.message || "Registration failed"));
     } finally {
       setIsLoading(false);
     }
@@ -86,15 +91,15 @@ export default function RegisterForm() {
 
           <div className="mb-4">
             <input
-              className={`w-full p-3 border rounded-full ${errors.fullName ? 'border-red-500' : 'border-pink-200'} focus:border-pink-500 focus:outline-none transition-colors duration-300`}
+              className={`w-full p-3 border rounded-full ${errors.username ? 'border-red-500' : 'border-pink-200'} focus:border-pink-500 focus:outline-none transition-colors duration-300`}
               type="text"
-              name="fullName"
-              placeholder="Full Name"
-              value={form.fullName}
+              name="username"
+              placeholder="Username"
+              value={form.username}
               onChange={handleChange}
               disabled={isLoading}
             />
-            {errors.fullName && <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>}
+            {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
           </div>
 
           <div className="mb-4">
@@ -131,16 +136,16 @@ export default function RegisterForm() {
           </div>
 
           <div className="mb-6">
-            <input
-              className={`w-full p-3 border rounded-full ${errors.phone ? 'border-red-500' : 'border-pink-200'} focus:border-pink-500 focus:outline-none transition-colors duration-300`}
-              type="text"
-              name="phone"
-              placeholder="Phone (e.g., +1234567890)"
-              value={form.phone}
+            <select
+              className="w-full p-3 border rounded-full border-pink-200 focus:border-pink-500 focus:outline-none transition-colors duration-300"
+              name="role"
+              value={form.role}
               onChange={handleChange}
               disabled={isLoading}
-            />
-            {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
+            >
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+            </select>
           </div>
 
           <button

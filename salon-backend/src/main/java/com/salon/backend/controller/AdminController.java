@@ -1,5 +1,6 @@
 package com.salon.backend.controller;
 
+import com.salon.backend.dto.UserDTO;
 import com.salon.backend.model.Appointment;
 import com.salon.backend.model.Notification;
 import com.salon.backend.model.User;
@@ -25,6 +26,19 @@ public class AdminController {
         this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;
         this.notificationRepository = notificationRepository;
+    }
+
+    @GetMapping("/users")
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(u -> new UserDTO(
+                        u.getId(),
+                        u.getEmail(),
+                        u.getRole(),
+                        u.getUsername()
+                ))
+                .toList();
     }
 
     // Grant access to a user (e.g., approve registration or change role)

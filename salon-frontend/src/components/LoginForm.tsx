@@ -1,17 +1,23 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../lib/api";
 import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react";
+import {jwtDecode} from "jwt-decode"; // Import jwt-decode to parse JWT
 
 interface LoginFormData {
-  email: string;
+  username: string;
   password: string;
 }
 
+interface JwtPayload {
+  role: "USER" | "ADMIN"; // Assuming role is included in JWT payload
+}
+
 export default function LoginForm() {
+  const navigate = useNavigate();
   const [form, setForm] = useState<LoginFormData>({
-    email: "",
+    username: "",
     password: "",
   });
   const [message, setMessage] = useState<string>("");
@@ -21,8 +27,8 @@ export default function LoginForm() {
 
   const validateForm = (): boolean => {
     const newErrors: Partial<LoginFormData> = {};
-    if (!form.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Invalid email format";
+    if (!form.username) newErrors.username = "Username is required";
+    else if (form.username.length < 2) newErrors.username = "Username must be at least 2 characters";
     if (!form.password) newErrors.password = "Password is required";
     else if (form.password.length < 6) newErrors.password = "Password must be at least 6 characters";
 
@@ -41,17 +47,30 @@ export default function LoginForm() {
 
     setIsLoading(true);
     try {
-      // Send email and password in the POST request body as JSON
-      // Example: { "email": "user@example.com", "password": "secret" }
-      await api.post("/auth/login", form, {
-        headers: {
-          // Add CSRF token if required by your backend
-          // Example: 'X-CSRF-Token': getCsrfToken()
-        }
+      const response = await api.post("/auth/login", {
+        username: form.username,
+        password: form.password,
       });
+      const token = response.data; // Backend returns JWT as plain string
+      localStorage.setItem("jwtToken", token); // Store JWT in localStorage
+      console.log(token);
+
+      // Decode JWT to get user role
+      const decoded: JwtPayload = jwtDecode(token);
+      const role = decoded.role;
+      // console.log('...........', role);
       setMessage("✅ Login successful!");
+      
+      // Redirect based on role
+      setTimeout(() => {
+        if (role === "USER") {
+          navigate("/dashboard");
+        } else if (role === "ADMIN") {
+          navigate("/admin-dashboard");
+        }
+      }, 1500);
     } catch (err: any) {
-      setMessage("❌ " + (err.response?.data?.message || "Something went wrong"));
+      setMessage("❌ " + (err.response?.data?.message || "Login failed"));
     } finally {
       setIsLoading(false);
     }
@@ -85,15 +104,15 @@ export default function LoginForm() {
 
           <div className="mb-4">
             <input
-              className={`w-full p-3 border rounded-full ${errors.email ? 'border-red-500' : 'border-pink-200'} focus:border-pink-500 focus:outline-none transition-colors duration-300`}
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={form.email}
+              className={`w-full p-3 border rounded-full ${errors.username ? 'border-red-500' : 'border-pink-200'} focus:border-pink-500 focus:outline-none transition-colors duration-300`}
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={form.username}
               onChange={handleChange}
               disabled={isLoading}
             />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+            {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
           </div>
 
           <div className="mb-6 relative">

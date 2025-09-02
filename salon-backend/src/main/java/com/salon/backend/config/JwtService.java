@@ -33,6 +33,7 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        extraClaims.put("role", userDetails.getAuthorities().stream().findFirst().map(a -> a.getAuthority()).orElse("USER")); // Add role
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -65,7 +66,6 @@ public class JwtService {
                 .getBody();
     }
 
-    // FIXED: Using plain text secret instead of Base64 decoding
     private Key getSignInKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
