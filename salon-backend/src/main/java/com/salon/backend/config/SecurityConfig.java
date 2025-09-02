@@ -1,6 +1,5 @@
 package com.salon.backend.config;
 
-import com.salon.backend.config.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

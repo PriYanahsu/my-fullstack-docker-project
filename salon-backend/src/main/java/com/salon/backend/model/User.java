@@ -1,6 +1,5 @@
 package com.salon.backend.model;
 
-import com.salon.backend.model.Appointment;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;

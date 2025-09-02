@@ -1,6 +1,5 @@
 package com.salon.backend.model;
 
-import com.salon.backend.model.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;

@@ -1,6 +1,5 @@
 package com.salon.backend.Service;
 
-import com.salon.backend.model.User;
 import com.salon.backend.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
